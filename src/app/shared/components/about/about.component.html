@@ -1,0 +1,152 @@
+<section class="about-hero">
+  <div class="container">
+    <div class="hero-content">
+      <h1>Connecting Talent with Opportunity</h1>
+      <p>We're on a mission to transform how Kenyans find their dream jobs</p>
+      <div class="hero-actions">
+        <a routerLink="/jobs" class="btn btn-primary">Browse Jobs</a>
+        <a routerLink="/auth/signup" class="btn btn-secondary">Get Started</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about-story">
+  <div class="container">
+    <div class="story-grid">
+      <div class="story-content">
+        <div class="story-badge">About Us</div>
+        <h2>Your Career Journey Starts Here</h2>
+        <p class="story-text">
+          TalentBridge was founded with a simple belief: every talented professional deserves 
+          access to the best job opportunities without barriers. We've built a platform that 
+          connects Kenyan job seekers with top employers across the country.
+        </p>
+        <p class="story-text">
+          From our headquarters in Nairobi, we've helped thousands of professionals find their 
+          dream careers. Our AI-powered platform streamlines the application process, making 
+          it easier than ever to land your next role.
+        </p>
+        <div class="story-stats">
+          <div class="stat-item">
+            <span class="stat-number">{{ stats.totalJobs }}+</span>
+            <span class="stat-label">Job Listings</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ stats.totalApplications }}+</span>
+            <span class="stat-label">Applications</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ stats.totalUsers }}+</span>
+            <span class="stat-label">Active Users</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ stats.totalCompanies }}+</span>
+            <span class="stat-label">Companies</span>
+          </div>
+        </div>
+      </div>
+      <div class="story-image">
+        <div class="image-placeholder">
+          <span class="image-icon">💼</span>
+          <span class="image-text">TalentBridge</span>
+          <span class="image-sub">Connecting Talent & Opportunity</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">Why Choose Us</div>
+      <h2>Built for Job Seekers</h2>
+      <p>Everything you need to land your dream job in one place</p>
+    </div>
+    <div class="features-grid">
+      <div *ngFor="let feature of features" class="feature-card">
+        <div class="feature-icon">{{ feature.icon }}</div>
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.totalJobs }}+</div>
+        <div class="stat-name">Job Opportunities</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.totalApplications }}+</div>
+        <div class="stat-name">Applications Processed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.totalUsers }}+</div>
+        <div class="stat-name">Registered Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">Ksh {{ (stats.revenue / 1000).toFixed(0) }}K</div>
+        <div class="stat-name">Total Revenue</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">Testimonials</div>
+      <h2>What Our Users Say</h2>
+      <p>Real stories from people who found their dream jobs through TalentBridge</p>
+    </div>
+    <div class="testimonials-grid">
+      <div *ngFor="let testimonial of testimonials" class="testimonial-card">
+        <div class="testimonial-rating">{{ getStars(testimonial.rating) }}</div>
+        <p class="testimonial-text">"{{ testimonial.text }}"</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">{{ getInitials(testimonial.name) }}</div>
+          <div class="author-info">
+            <strong>{{ testimonial.name }}</strong>
+            <span>{{ testimonial.role }} at {{ testimonial.company }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="team-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">Team</div>
+      <h2>Meet the Team</h2>
+      <p>The passionate people behind TalentBridge</p>
+    </div>
+    <div class="team-grid">
+      <div *ngFor="let member of teamMembers" class="team-card">
+        <div class="team-avatar">{{ member.avatar }}</div>
+        <h4>{{ member.name }}</h4>
+        <span class="team-role">{{ member.role }}</span>
+        <p>{{ member.bio }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Ready to Start Your Career Journey?</h2>
+      <p>Join thousands of professionals who have found their dream jobs through TalentBridge</p>
+      <div class="cta-actions">
+        <a routerLink="/auth/signup" class="btn btn-primary btn-lg">Get Started Free</a>
+        <a routerLink="/jobs" class="btn btn-outline-light btn-lg">Browse Jobs</a>
+      </div>
+    </div>
+  </div>
+</section>

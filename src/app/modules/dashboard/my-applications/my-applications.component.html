@@ -1,0 +1,82 @@
+<div class="applications-container">
+  <div class="applications-header">
+    <div class="header-left">
+      <h1>📋 My Applications</h1>
+      <p class="subtitle">Track the status of all your job applications</p>
+    </div>
+    <div class="header-right">
+      <span class="badge-count">{{ filteredApplications.length }} applications</span>
+    </div>
+  </div>
+
+  <div class="alert alert-success" *ngIf="success">{{ success }}</div>
+  <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+  <div class="filter-section">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="filterApplications()" 
+        placeholder="Search by job title, company, or reference..."
+        class="search-input"
+      >
+    </div>
+    <div class="filter-wrap">
+      <select [(ngModel)]="statusFilter" (change)="filterApplications()" class="filter-select">
+        <option value="">All Statuses</option>
+        <option *ngFor="let status of statuses" [value]="status">{{ status | titlecase }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading your applications...</p>
+  </div>
+
+  <div *ngIf="!loading && filteredApplications.length === 0" class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h3>No Applications Yet</h3>
+    <p>You haven't applied for any jobs yet. Start your job search today!</p>
+    <a routerLink="/jobs" class="btn btn-primary">Browse Jobs</a>
+  </div>
+
+  <div *ngIf="!loading && filteredApplications.length > 0" class="applications-list">
+    <div *ngFor="let app of filteredApplications" class="application-card">
+      <div class="card-top">
+        <div class="app-info">
+          <h3 class="job-title">{{ app.jobTitle }}</h3>
+          <div class="company-info">
+            <span class="company">{{ app.company }}</span>
+            <span class="divider">•</span>
+            <span class="reference">Ref: {{ app.referenceNumber }}</span>
+          </div>
+        </div>
+        <div class="status-badge" [class]="getStatusBadgeClass(app.status)">
+          <span class="status-icon">{{ getStatusIcon(app.status) }}</span>
+          {{ getStatusLabel(app.status) }}
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div *ngIf="app.coverLetter" class="cover-letter">
+          <p class="cover-letter-text">{{ app.coverLetter }}</p>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="footer-left">
+          <span class="applied-date">📅 Applied: {{ formatDate(app.appliedAt) }}</span>
+          <span class="cv-link" *ngIf="app.cvId">📄 CV ID: #{{ app.cvId }}</span>
+        </div>
+        <div class="footer-right">
+          <a routerLink="/jobs/{{ app.jobId }}" class="btn btn-outline-primary btn-sm">
+            View Job
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

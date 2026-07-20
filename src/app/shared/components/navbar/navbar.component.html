@@ -1,0 +1,135 @@
+<nav class="navbar" [class.scrolled]="isScrolled">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <a routerLink="/">
+        <span class="brand-icon">💼</span>
+        <span class="brand-text">Talent<span>Bridge</span></span>
+      </a>
+    </div>
+
+    <!-- Search Bar - Desktop -->
+    <div class="search-wrapper" *ngIf="!isMobileSearchOpen">
+      <div class="search-bar" [class.expanded]="searchFocused">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          placeholder="Search jobs, companies, locations..." 
+          [(ngModel)]="searchQuery"
+          (focus)="searchFocused = true"
+          (blur)="searchFocused = false"
+          (keydown.enter)="performSearch()"
+          class="search-input"
+        >
+        <button class="search-btn" (click)="performSearch()">Search</button>
+      </div>
+    </div>
+
+    <button class="mobile-toggle" (click)="toggleMobileMenu()" [class.active]="mobileMenuOpen">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <!-- Mobile Search Toggle -->
+    <button class="mobile-search-toggle" (click)="toggleMobileSearch()" *ngIf="!isMobileSearchOpen">
+      🔍
+    </button>
+
+    <div class="nav-links" [class.open]="mobileMenuOpen">
+      <a routerLink="/jobs" routerLinkActive="active" (click)="closeMenu()">
+        <span class="nav-icon">💼</span> Jobs
+      </a>
+      <a routerLink="/dashboard" routerLinkActive="active" *ngIf="isLoggedIn" (click)="closeMenu()">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <a routerLink="/admin" routerLinkActive="active" *ngIf="isAdmin" (click)="closeMenu()">
+        <span class="nav-icon">⚙️</span> Admin
+      </a>
+      
+      <!-- Mobile Search -->
+      <div class="mobile-search" *ngIf="isMobileSearchOpen">
+        <div class="mobile-search-bar">
+          <input 
+            type="text" 
+            placeholder="Search jobs..." 
+            [(ngModel)]="searchQuery"
+            (keydown.enter)="performSearch(); closeMobileSearch()"
+            class="mobile-search-input"
+            autofocus
+          >
+          <button class="mobile-search-btn" (click)="performSearch(); closeMobileSearch()">Search</button>
+        </div>
+      </div>
+
+      <!-- Mobile Auth Buttons -->
+      <div *ngIf="!isLoggedIn" class="mobile-auth">
+        <a routerLink="/auth/login" class="btn btn-outline-primary btn-block" (click)="closeMenu()">Login</a>
+        <a routerLink="/auth/signup" class="btn btn-primary btn-block" (click)="closeMenu()">Sign Up</a>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <div *ngIf="!isLoggedIn" class="auth-buttons">
+        <a routerLink="/auth/login" class="btn btn-outline-primary btn-sm">Login</a>
+        <a routerLink="/auth/signup" class="btn btn-primary btn-sm">Sign Up</a>
+      </div>
+
+      <div *ngIf="isLoggedIn" class="profile-container">
+        <button class="profile-toggle" (click)="toggleProfileDropdown()" [class.active]="profileDropdownOpen">
+          <div class="avatar-wrapper">
+            <img *ngIf="user?.avatar" [src]="user.avatar" alt="Avatar" class="avatar-img">
+            <div *ngIf="!user?.avatar" class="avatar" [style.background]="getAvatarGradient()">
+              {{ getInitials() }}
+            </div>
+            <span class="avatar-status" [class.online]="true"></span>
+          </div>
+          <span class="user-name">{{ user?.firstName }} {{ user?.lastName }}</span>
+          <span class="dropdown-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+            </svg>
+          </span>
+        </button>
+
+        <div class="profile-dropdown" [class.open]="profileDropdownOpen">
+          <div class="dropdown-header">
+            <div class="dropdown-user-info">
+              <div class="dropdown-avatar" [style.background]="getAvatarGradient()">
+                {{ getInitials() }}
+              </div>
+              <div class="dropdown-user-details">
+                <strong>{{ user?.firstName }} {{ user?.lastName }}</strong>
+                <span class="user-email">{{ user?.email }}</span>
+              </div>
+            </div>
+            <span class="user-role badge" [class]="'badge-' + (user?.role?.toLowerCase() || 'user')">
+              {{ user?.role || 'USER' }}
+            </span>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a routerLink="/dashboard" class="dropdown-item" (click)="closeDropdown()">
+            <span class="dropdown-icon-item">📊</span> Dashboard
+          </a>
+          <a routerLink="/dashboard/profile" class="dropdown-item" (click)="closeDropdown()">
+            <span class="dropdown-icon-item">👤</span> Profile Settings
+          </a>
+          <a routerLink="/dashboard/applications" class="dropdown-item" (click)="closeDropdown()">
+            <span class="dropdown-icon-item">📋</span> My Applications
+            <span class="badge-count" *ngIf="applicationCount > 0">{{ applicationCount }}</span>
+          </a>
+          <a routerLink="/dashboard/cvs" class="dropdown-item" (click)="closeDropdown()">
+            <span class="dropdown-icon-item">📄</span> My CVs
+          </a>
+          <a routerLink="/dashboard/payments" class="dropdown-item" (click)="closeDropdown()">
+            <span class="dropdown-icon-item">💰</span> Payments
+            <span class="payment-status" [class.paid]="user?.hasPaid">●</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item logout" (click)="logout()">
+            <span class="dropdown-icon-item">🚪</span> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

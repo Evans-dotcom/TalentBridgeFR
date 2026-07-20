@@ -1,0 +1,126 @@
+<div class="payments-container">
+  <div class="payments-header">
+    <div class="header-left">
+      <h1>💰 My Payments</h1>
+      <p class="subtitle">Track all your payment transactions</p>
+    </div>
+    <div class="header-right">
+      <div class="payment-status-badge" [class.paid]="hasPaid" [class.unpaid]="!hasPaid">
+        {{ hasPaid ? '✅ Payment Active' : '⏳ Payment Pending' }}
+      </div>
+      <button class="btn-refresh" (click)="refreshPayments()" title="Refresh">
+        🔄
+      </button>
+    </div>
+  </div>
+
+  <div class="alert alert-success" *ngIf="success">{{ success }}</div>
+  <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">{{ stats.total }}</div>
+      <div class="stat-label">Total Transactions</div>
+    </div>
+    <div class="stat-card stat-paid">
+      <div class="stat-value">{{ stats.paid }}</div>
+      <div class="stat-label">✅ Successful</div>
+    </div>
+    <div class="stat-card stat-pending">
+      <div class="stat-value">{{ stats.pending }}</div>
+      <div class="stat-label">⏳ Pending</div>
+    </div>
+    <div class="stat-card stat-amount">
+      <div class="stat-value">{{ formatAmount(stats.totalAmount) }}</div>
+      <div class="stat-label">Total Paid</div>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="filterPayments()"
+        placeholder="Search by reference, transaction ID, receipt..."
+        class="search-input"
+      >
+    </div>
+    <div class="filter-wrap">
+      <select [(ngModel)]="statusFilter" (change)="filterPayments()" class="filter-select">
+        <option value="">All Statuses</option>
+        <option *ngFor="let status of paymentStatuses" [value]="status">{{ status | titlecase }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading your payments...</p>
+  </div>
+
+  <div *ngIf="!loading && filteredPayments.length === 0" class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h3>No Payments Yet</h3>
+    <p>You haven't made any payments yet.</p>
+    <a routerLink="/jobs" class="btn btn-primary">Browse Jobs</a>
+  </div>
+
+  <div *ngIf="!loading && filteredPayments.length > 0" class="payments-list">
+    <div *ngFor="let payment of filteredPayments" class="payment-card">
+      <div class="card-top">
+        <div class="payment-info">
+          <div class="payment-method" [class]="getMethodClass(payment.paymentMethod)">
+            <span class="method-icon">{{ getMethodIcon(payment.paymentMethod) }}</span>
+            {{ getPaymentMethodLabel(payment.paymentMethod) }}
+          </div>
+          <div class="payment-reference">
+            {{ getReceiptText(payment) }}
+          </div>
+        </div>
+        <div class="payment-amount" [class.amount-paid]="payment.status === 'PAID'">
+          {{ formatAmount(payment.amount) }}
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="payment-details">
+          <div class="detail-item">
+            <span class="detail-label">Status</span>
+            <span class="status-badge" [class]="getStatusBadgeClass(payment.status)">
+              <span class="status-icon">{{ getStatusIcon(payment.status) }}</span>
+              {{ getStatusLabel(payment.status) }}
+            </span>
+          </div>
+          <div class="detail-item" *ngIf="payment.transactionId">
+            <span class="detail-label">Transaction ID</span>
+            <span class="detail-value">{{ payment.transactionId }}</span>
+          </div>
+          <div class="detail-item" *ngIf="payment.mpesaReceiptNumber">
+            <span class="detail-label">M-PESA Receipt</span>
+            <span class="detail-value mpesa-receipt">{{ payment.mpesaReceiptNumber }}</span>
+          </div>
+          <div class="detail-item" *ngIf="payment.paymentReference">
+            <span class="detail-label">Reference</span>
+            <span class="detail-value">{{ payment.paymentReference }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Date</span>
+            <span class="detail-value">{{ formatDate(payment.paymentDate || payment.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer" *ngIf="payment.status === 'PAID' && payment.mpesaReceiptNumber">
+        <span class="success-text">✅ Payment confirmed</span>
+      </div>
+      <div class="card-footer" *ngIf="payment.status === 'PENDING'">
+        <span class="pending-text">⏳ Waiting for confirmation</span>
+      </div>
+      <div class="card-footer" *ngIf="payment.status === 'FAILED' || payment.status === 'CANCELLED'">
+        <span class="failed-text">❌ Payment {{ payment.status.toLowerCase() }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+<div class="jobs-container">
+  <div class="jobs-header">
+    <h1>Find Your Next Opportunity</h1>
+    <p>Browse through {{ filteredJobs.length }} job opportunities</p>
+  </div>
+
+  <div class="search-section">
+    <form [formGroup]="searchForm" class="search-form">
+      <div class="search-row">
+        <input type="text" formControlName="keyword" placeholder="Search by title, company, or keyword..." class="search-input">
+      </div>
+      <div class="filter-row">
+        <input type="text" formControlName="location" placeholder="Location (e.g., Nairobi)" class="filter-input">
+        <select formControlName="jobType" class="filter-select">
+          <option value="">All Job Types</option>
+          <option *ngFor="let type of jobTypes" [value]="type">{{ type }}</option>
+        </select>
+        <select formControlName="industry" class="filter-select">
+          <option value="">All Industries</option>
+          <option *ngFor="let industry of industries" [value]="industry">{{ industry }}</option>
+        </select>
+        <button type="button" class="btn btn-secondary" (click)="resetFilters()">Reset</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="jobs-list">
+    <div *ngIf="loading" class="loading-state">Loading jobs...</div>
+    <div *ngIf="!loading && filteredJobs.length === 0" class="empty-state">
+      <p>No jobs found matching your criteria.</p>
+    </div>
+    <div *ngFor="let job of filteredJobs" class="job-card">
+      <div class="job-card-header">
+        <h3>{{ job.title }}</h3>
+        <span class="badge" [class]="'badge-' + job.jobType.toLowerCase().replace(' ', '-')">
+          {{ job.jobType }}
+        </span>
+      </div>
+      <div class="job-card-body">
+        <p class="company">{{ job.company }}</p>
+        <p class="location">{{ job.location }}</p>
+        <p class="salary" *ngIf="job.salaryRange">{{ job.salaryRange }}</p>
+        <p class="description">{{ job.description | slice:0:150 }}...</p>
+        <div class="job-tags">
+          <span class="tag">{{ job.industry }}</span>
+          <span class="tag">{{ job.experienceLevel }}</span>
+          <span class="tag">{{ job.educationLevel }}</span>
+        </div>
+      </div>
+      <div class="job-card-footer">
+        <span class="posted-date">Posted: {{ job.postedAt | date:'MMM d, y' }}</span>
+        <a [routerLink]="['/Job-detail', job.id]" class="btn btn-primary">View Details</a>
+      </div>
+    </div>
+  </div>
+</div>

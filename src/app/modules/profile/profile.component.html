@@ -1,0 +1,172 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h1>👤 My Profile</h1>
+    <p>Manage your account information and preferences</p>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="profile-content">
+    <!-- Sidebar -->
+    <div class="profile-sidebar">
+      <div class="user-card">
+        <div class="avatar-container">
+          <div class="avatar-large" [style.background]="getAvatarColor()">
+            {{ getInitials() }}
+          </div>
+          <div class="avatar-status" [class.online]="true"></div>
+        </div>
+        <h3>{{ getFullName() }}</h3>
+        <p class="user-role">
+          <span class="badge" [class.badge-admin]="getRole() === 'ADMIN'">
+            {{ getRole() }}
+          </span>
+        </p>
+        <p class="user-email">{{ currentUser?.email }}</p>
+        <div class="user-stats">
+          <div class="stat">
+            <strong>{{ hasPaid() ? '✅' : '⏳' }}</strong>
+            <span>Payment</span>
+          </div>
+          <div class="stat">
+            <strong>{{ getRole() }}</strong>
+            <span>Role</span>
+          </div>
+          <div class="stat">
+            <strong>{{ currentUser?.userId || '—' }}</strong>
+            <span>User ID</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="profile-nav">
+        <button class="nav-item" [class.active]="activeTab === 'personal'" (click)="activeTab = 'personal'">
+          <span class="nav-icon">👤</span> Personal Info
+        </button>
+        <button class="nav-item" [class.active]="activeTab === 'security'" (click)="activeTab = 'security'">
+          <span class="nav-icon">🔒</span> Security
+        </button>
+        <button class="nav-item" [class.active]="activeTab === 'activity'" (click)="activeTab = 'activity'">
+          <span class="nav-icon">📊</span> Activity
+        </button>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="profile-main">
+      <!-- Personal Info Tab -->
+      <div *ngIf="activeTab === 'personal'" class="tab-content">
+        <div class="tab-header">
+          <h2>Personal Information</h2>
+          <button class="btn btn-primary" (click)="saveProfile()" [disabled]="!profileForm.dirty || isLoading">
+            {{ isLoading ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+
+        <form [formGroup]="profileForm" class="profile-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" formControlName="firstName" placeholder="Enter your first name">
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" formControlName="lastName" placeholder="Enter your last name">
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" formControlName="email" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" formControlName="phoneNumber" placeholder="Enter your phone number">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Bio / About Me</label>
+            <textarea formControlName="bio" rows="4" placeholder="Tell us about yourself..."></textarea>
+          </div>
+        </form>
+      </div>
+
+      <!-- Security Tab -->
+      <div *ngIf="activeTab === 'security'" class="tab-content">
+        <div class="tab-header">
+          <h2>Security Settings</h2>
+        </div>
+
+        <div class="security-grid">
+          <div class="security-card">
+            <h3>🔑 Change Password</h3>
+            <form [formGroup]="passwordForm" class="security-form">
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" formControlName="currentPassword" placeholder="Enter current password">
+              </div>
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" formControlName="newPassword" placeholder="Enter new password">
+                <small class="hint">Minimum 8 characters</small>
+              </div>
+              <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" formControlName="confirmPassword" placeholder="Confirm new password">
+              </div>
+              <button type="button" class="btn btn-primary" (click)="changePassword()" [disabled]="passwordForm.invalid">
+                Update Password
+              </button>
+            </form>
+          </div>
+
+          <div class="security-card">
+            <h3>🔐 Two-Factor Authentication</h3>
+            <div class="security-status">
+              <span class="status-badge" [class.enabled]="twoFactorEnabled" [class.disabled]="!twoFactorEnabled">
+                {{ twoFactorEnabled ? 'Enabled' : 'Disabled' }}
+              </span>
+            </div>
+            <p>Add an extra layer of security to your account.</p>
+            <button class="btn" [class.btn-primary]="!twoFactorEnabled" [class.btn-secondary]="twoFactorEnabled" (click)="toggleTwoFactor()">
+              {{ twoFactorEnabled ? 'Disable' : 'Enable' }} 2FA
+            </button>
+          </div>
+
+          <div class="security-card">
+            <h3>💻 Active Sessions</h3>
+            <div class="sessions-list">
+              <div *ngFor="let session of activeSessions" class="session-item">
+                <span class="session-icon">{{ session.device === 'Mobile' ? '📱' : '💻' }}</span>
+                <div class="session-details">
+                  <strong>{{ session.browser }} on {{ session.device }}</strong>
+                  <span>{{ session.location }} • {{ session.lastActive }}</span>
+                  <span class="session-badge" *ngIf="session.current">Current</span>
+                </div>
+                <button class="btn-icon" *ngIf="!session.current" (click)="logoutSession(session.id)">
+                  🚪
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Tab -->
+      <div *ngIf="activeTab === 'activity'" class="tab-content">
+        <div class="tab-header">
+          <h2>Recent Activity</h2>
+        </div>
+
+        <div class="activity-list">
+          <div *ngFor="let activity of recentActivities" class="activity-item">
+            <span class="activity-icon"><i [class]="activity.icon"></i></span>
+            <div class="activity-details">
+              <p>{{ activity.description }}</p>
+              <span class="activity-time">{{ activity.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

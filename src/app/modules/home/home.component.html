@@ -1,0 +1,173 @@
+<div class="jobs-page">
+  <div class="jobs-page-inner">
+
+    <!-- ============ Sidebar ============ -->
+    <aside class="filters-sidebar">
+      <div class="filter-card">
+        <h2 class="filter-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Search &amp; Filter
+        </h2>
+        <p class="filter-subtitle">Find your next opportunity</p>
+
+        <div class="filter-group">
+          <label for="searchInput">Search jobs</label>
+          <div class="input-with-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Search by title, company, or keywords"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="applyFilters()"
+            >
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label for="locationInput">Location</label>
+          <div class="input-with-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <input
+              id="locationInput"
+              type="text"
+              placeholder="e.g., Nairobi, Kenya"
+              [(ngModel)]="locationTerm"
+              (ngModelChange)="applyFilters()"
+            >
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label for="jobTypeSelect">Job Type</label>
+          <select id="jobTypeSelect" [(ngModel)]="selectedJobType" (ngModelChange)="applyFilters()">
+            <option value="">All job types</option>
+            <option *ngFor="let type of jobTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+
+        <button
+          type="button"
+          class="clear-filters-btn"
+          *ngIf="hasActiveFilters()"
+          (click)="clearFilters()"
+        >
+          Clear all filters
+        </button>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </div>
+        <h3>For Job Seekers</h3>
+        <p>Discover amazing opportunities from top companies.</p>
+      </div>
+    </aside>
+
+    <!-- ============ Main listing ============ -->
+    <main class="jobs-main">
+      <div class="jobs-main-header">
+        <h1>Browse Jobs</h1>
+        <span class="results-count" *ngIf="!loading">
+          {{ filteredJobs.length }} opportunit{{ filteredJobs.length === 1 ? 'y' : 'ies' }} found
+        </span>
+      </div>
+
+      <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading opportunities...</p>
+      </div>
+
+      <div *ngIf="!loading && filteredJobs.length === 0" class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <h3>No jobs found</h3>
+        <p>Try adjusting your search or filters to find more opportunities.</p>
+        <button type="button" class="btn-outline" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+          Clear filters
+        </button>
+      </div>
+
+      <div class="jobs-list" *ngIf="!loading && filteredJobs.length > 0">
+        <article class="job-card" *ngFor="let job of filteredJobs">
+          <div class="job-card-top">
+            <div class="job-card-heading">
+              <h3>{{ job.title }}</h3>
+              <span class="badge" [class]="getBadgeClass(job.jobType)">{{ job.jobType }}</span>
+            </div>
+            <a [routerLink]="['/jobs', job.id]" class="view-details-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              View Details
+            </a>
+          </div>
+
+          <div class="job-card-meta">
+            <span class="meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="3" width="16" height="18" rx="1"></rect>
+                <line x1="9" y1="7" x2="9" y2="7"></line>
+                <line x1="15" y1="7" x2="15" y2="7"></line>
+                <line x1="9" y1="11" x2="9" y2="11"></line>
+                <line x1="15" y1="11" x2="15" y2="11"></line>
+                <line x1="9" y1="15" x2="9" y2="15"></line>
+                <line x1="15" y1="15" x2="15" y2="15"></line>
+                <line x1="10" y1="21" x2="10" y2="17"></line>
+                <line x1="14" y1="21" x2="14" y2="17"></line>
+              </svg>
+              {{ job.company }}
+            </span>
+            <span class="meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              {{ job.location }}
+            </span>
+            <span class="meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              {{ getRelativeTime(job.postedAt) }}
+            </span>
+          </div>
+
+          <p class="job-card-desc">{{ job.description }}</p>
+
+          <div class="job-card-footer" *ngIf="job.salaryRange">
+            <span class="salary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                <circle cx="12" cy="12" r="2"></circle>
+                <path d="M6 6v12"></path>
+                <path d="M18 6v12"></path>
+              </svg>
+              {{ job.salaryRange }}
+            </span>
+          </div>
+        </article>
+      </div>
+    </main>
+
+  </div>
+</div>

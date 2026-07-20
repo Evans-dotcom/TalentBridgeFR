@@ -1,0 +1,96 @@
+<div class="job-detail-container">
+  <div *ngIf="loading" class="loading-state">Loading job details...</div>
+
+  <div *ngIf="!loading && job" class="job-detail-card">
+    <button class="btn-back" (click)="goBack()">← Back to Jobs</button>
+
+    <div class="job-header">
+      <h1>{{ job.title }}</h1>
+      <div class="job-meta">
+        <span class="company">{{ job.company }}</span>
+        <span class="location">{{ job.location }}</span>
+        <span class="badge" [class]="'badge-' + (job.jobType ? job.jobType.toLowerCase().replace(' ', '-') : 'default')">
+          {{ job.jobType }}
+        </span>
+      </div>
+      <div class="salary" *ngIf="job.salaryRange">{{ job.salaryRange }}</div>
+    </div>
+
+    <div class="job-action-buttons">
+      <button class="btn btn-primary btn-lg" (click)="applyNow()">
+        ➤ Apply Now
+      </button>
+      <button class="btn btn-secondary" (click)="openShareModal()">
+        ⇄ Share
+      </button>
+      <button class="btn btn-secondary" (click)="downloadPDF()">
+        ⬇ Download PDF
+      </button>
+    </div>
+
+    <div class="job-content">
+      <div class="job-section">
+        <h3>Job Description</h3>
+        <p>{{ job.description }}</p>
+      </div>
+
+      <div class="job-section">
+        <h3>Requirements</h3>
+        <p>{{ job.requirements }}</p>
+      </div>
+
+      <div class="job-details-grid">
+        <div class="detail-item">
+          <label>Industry</label>
+          <span>{{ job.industry }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Experience Level</label>
+          <span>{{ job.experienceLevel }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Education Level</label>
+          <span>{{ job.educationLevel }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Posted</label>
+          <span>{{ job.postedAt | date:'MMM d, y' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="job.expiresAt">
+          <label>Expires</label>
+          <span>{{ job.expiresAt | date:'MMM d, y' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div class="share-modal-overlay" *ngIf="showShareModal" (click)="closeShareModal()">
+    <div class="share-modal-content" (click)="$event.stopPropagation()">
+      <div class="share-modal-header">
+        <h3>Share Job Opportunity</h3>
+        <button class="share-modal-close" (click)="closeShareModal()">✕</button>
+      </div>
+      <p class="share-modal-subtitle">Share this job with others who might be interested.</p>
+
+      <div class="share-link-row">
+        <input type="text" class="share-link-input" [value]="getShareUrl()" readonly>
+        <button class="btn btn-primary share-copy-btn" (click)="copyLink()">
+          {{ linkCopied ? 'Copied!' : 'Copy' }}
+        </button>
+      </div>
+
+      <div class="share-options-row">
+        <button class="btn btn-secondary share-option-btn" (click)="shareViaEmail()">
+          ✉ Email
+        </button>
+        <button class="btn btn-secondary share-option-btn" (click)="shareViaLinkedIn()">
+          in LinkedIn
+        </button>
+        <button class="btn btn-secondary share-option-btn" (click)="shareViaTwitter()">
+          𝕏 Twitter
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,435 @@
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">💼</span>
+      <span>TalentBridge Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button *ngFor="let item of menuItems" class="nav-item" [class.active]="activeSection === item.id"
+        (click)="setSection(item.id)">
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="back-btn" (click)="goToWebsite()">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Website</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <h1>{{ activeSection | titlecase }}</h1>
+      </div>
+      <div class="header-right">
+        <span class="admin-user">{{ user?.firstName }} {{ user?.lastName }}</span>
+        <button class="view-website-btn" (click)="goToWebsite()">View Website</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+      </div>
+
+      <!-- ============================================================
+           DASHBOARD
+      ============================================================ -->
+      <ng-container *ngIf="activeSection === 'dashboard' && !loading">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon jobs"><i class="fas fa-briefcase"></i></div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.totalJobs }}</div>
+              <div class="stat-label">Total Jobs</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon applications"><i class="fas fa-file-alt"></i></div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.totalApplications }}</div>
+              <div class="stat-label">Applications</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon users"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.totalUsers }}</div>
+              <div class="stat-label">Total Users</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon revenue"><i class="fas fa-coins"></i></div>
+            <div class="stat-info">
+              <div class="stat-value">{{ formatPrice(stats.totalRevenue) }}</div>
+              <div class="stat-label">Total Revenue</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-actions">
+          <h2>Quick Actions</h2>
+          <div class="actions-grid">
+            <div class="action-card" (click)="setSection('jobs'); openCreateJob()">
+              <i class="fas fa-plus-circle"></i>
+              <h3>Post Job</h3>
+              <p>Create a new job listing</p>
+            </div>
+            <div class="action-card" (click)="setSection('applications')">
+              <i class="fas fa-file-alt"></i>
+              <h3>View Applications</h3>
+              <p>Review all applications</p>
+            </div>
+            <div class="action-card" (click)="setSection('users')">
+              <i class="fas fa-users"></i>
+              <h3>Manage Users</h3>
+              <p>View and manage users</p>
+            </div>
+            <div class="action-card" (click)="setSection('payments')">
+              <i class="fas fa-credit-card"></i>
+              <h3>Payments</h3>
+              <p>View payment history</p>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ============================================================
+           JOBS MANAGEMENT
+      ============================================================ -->
+      <ng-container *ngIf="activeSection === 'jobs' && !loading">
+        <div class="section-toolbar" *ngIf="!showJobForm">
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" [(ngModel)]="jobSearchTerm" (input)="filterJobs()"
+              placeholder="Search jobs by title, company, location...">
+          </div>
+          <button class="btn-add" (click)="openCreateJob()">
+            <i class="fas fa-plus"></i> Post New Job
+          </button>
+        </div>
+
+        <!-- Job Form -->
+        <div class="form-wrap" *ngIf="showJobForm">
+          <div class="form-header">
+            <h2>{{ editingJob ? 'Edit Job' : 'Post New Job' }}</h2>
+            <button class="btn-close-form" (click)="closeJobForm()"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="job-form">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label>Job Title *</label>
+                <input type="text" [(ngModel)]="jobForm.title" placeholder="e.g. Senior Software Engineer">
+              </div>
+              <div class="form-group">
+                <label>Company *</label>
+                <input type="text" [(ngModel)]="jobForm.company" placeholder="Company name">
+              </div>
+              <div class="form-group">
+                <label>Location *</label>
+                <input type="text" [(ngModel)]="jobForm.location" placeholder="e.g. Nairobi, Kenya">
+              </div>
+              <div class="form-group">
+                <label>Salary Range</label>
+                <input type="text" [(ngModel)]="jobForm.salaryRange" placeholder="e.g. Ksh 80,000 - Ksh 120,000">
+              </div>
+              <div class="form-group">
+                <label>Job Type *</label>
+                <select [(ngModel)]="jobForm.jobType">
+                  <option value="">Select Job Type</option>
+                  <option *ngFor="let type of jobTypes" [value]="type">{{ type }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Industry *</label>
+                <select [(ngModel)]="jobForm.industry">
+                  <option value="">Select Industry</option>
+                  <option *ngFor="let industry of industries" [value]="industry">{{ industry }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Experience Level *</label>
+                <select [(ngModel)]="jobForm.experienceLevel">
+                  <option value="">Select Experience Level</option>
+                  <option *ngFor="let level of experienceLevels" [value]="level">{{ level }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Education Level *</label>
+                <select [(ngModel)]="jobForm.educationLevel">
+                  <option value="">Select Education Level</option>
+                  <option *ngFor="let level of educationLevels" [value]="level">{{ level }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Expiry Date</label>
+                <input type="date" [(ngModel)]="jobForm.expiresAt">
+              </div>
+              <div class="form-group full">
+                <label>Job Description *</label>
+                <textarea [(ngModel)]="jobForm.description" rows="5"
+                  placeholder="Describe the job role, responsibilities, and benefits..."></textarea>
+              </div>
+              <div class="form-group full">
+                <label>Requirements *</label>
+                <textarea [(ngModel)]="jobForm.requirements" rows="5"
+                  placeholder="List the requirements, skills, and qualifications needed..."></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" (click)="closeJobForm()">Cancel</button>
+              <button class="btn-save" (click)="saveJob()" [disabled]="jobSaving">
+                <i class="fas fa-save"></i>
+                {{ jobSaving ? 'Saving...' : (editingJob ? 'Update Job' : 'Post Job') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jobs Table -->
+        <div class="table-wrap" *ngIf="!showJobForm">
+          <div class="table-count">{{ filteredJobs.length }} jobs found</div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Location</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Posted</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let job of filteredJobs">
+                <td class="job-title">{{ job.title }}</td>
+                <td>{{ job.company }}</td>
+                <td>{{ job.location }}</td>
+                <td><span class="badge badge-job-type">{{ job.jobType }}</span></td>
+                <td>
+                  <span class="badge" [class.badge-active]="job.isActive" [class.badge-inactive]="!job.isActive">
+                    {{ job.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>{{ job.postedAt | date:'MMM d, y' }}</td>
+                <td>
+                  <div class="table-actions">
+                    <button class="btn-edit" (click)="openEditJob(job)" title="Edit"><i
+                        class="fas fa-edit"></i></button>
+                    <button class="btn-toggle" (click)="toggleJobStatus(job)"
+                      title="{{ job.isActive ? 'Deactivate' : 'Activate' }}">
+                      <i [class]="job.isActive ? 'fas fa-pause' : 'fas fa-play'"></i>
+                    </button>
+                    <button class="btn-delete" (click)="deleteJob(job.id)" title="Delete"><i
+                        class="fas fa-trash"></i></button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredJobs.length === 0">
+                <td colspan="7" class="empty-row">No jobs found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ============================================================
+           APPLICATIONS
+      ============================================================ -->
+      <ng-container *ngIf="activeSection === 'applications' && !loading">
+        <div class="section-toolbar">
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" [(ngModel)]="appSearchTerm" (input)="filterApplications()"
+              placeholder="Search by job title, company, reference...">
+          </div>
+          <select [(ngModel)]="appStatusFilter" (change)="filterApplications()">
+            <option value="">All Statuses</option>
+            <option *ngFor="let status of appStatuses" [value]="status">{{ status | titlecase }}</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-count">{{ filteredApplications.length }} applications</div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Status</th>
+                <th>Applied</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let app of filteredApplications">
+                <td class="ref-number">{{ app.referenceNumber }}</td>
+                <td>{{ app.jobTitle }}</td>
+                <td>{{ app.company }}</td>
+                <td>
+                  <span class="badge" [class]="getStatusColor(app.status)">
+                    {{ app.status }}
+                  </span>
+                </td>
+                <td>{{ app.appliedAt | date:'MMM d, y' }}</td>
+              </tr>
+              <tr *ngIf="filteredApplications.length === 0">
+                <td colspan="5" class="empty-row">No applications found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ============================================================
+           USERS
+      ============================================================ -->
+      <ng-container *ngIf="activeSection === 'users' && !loading">
+        <div class="section-toolbar">
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" [(ngModel)]="userSearchTerm" (input)="filterUsers()"
+              placeholder="Search by name, email, phone...">
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-count">{{ filteredUsers.length }} users</div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Paid</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of filteredUsers">
+                <td>{{ user.firstName }} {{ user.lastName }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.phoneNumber }}</td>
+                <td>
+                  <span class="badge" [class.badge-admin]="user.role?.name === 'ADMIN'">
+                    {{ user.role?.name || 'USER' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [class.badge-paid]="user.hasPaid" [class.badge-unpaid]="!user.hasPaid">
+                    {{ user.hasPaid ? '✅' : '❌' }}
+                  </span>
+                </td>
+                <td>
+                  <select class="role-select" [ngModel]="user.role?.name || 'USER'"
+                    (ngModelChange)="assignRole(user.id, $event)">
+                    <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+                  </select>
+                </td>
+              </tr>
+              <tr *ngIf="filteredUsers.length === 0">
+                <td colspan="6" class="empty-row">No users found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ============================================================
+           PAYMENTS
+      ============================================================ -->
+      <ng-container *ngIf="activeSection === 'payments' && !loading">
+        <div class="section-toolbar">
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" [(ngModel)]="paymentSearchTerm" (input)="filterPayments()"
+              placeholder="Search by reference, transaction ID...">
+          </div>
+          <select [(ngModel)]="paymentStatusFilter" (change)="filterPayments()">
+            <option value="">All Statuses</option>
+            <option *ngFor="let status of paymentStatuses" [value]="status">{{ status | titlecase }}</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-count">{{ filteredPayments.length }} payments | Total: {{ formatPrice(stats.totalRevenue) }}
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th>Receipt</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of filteredPayments">
+                <td class="ref-number">{{ payment.paymentReference || '—' }}</td>
+                <td class="amount">{{ formatPrice(payment.amount || 0) }}</td>
+                <td>{{ payment.paymentMethod }}</td>
+                <td>
+                  <span class="badge" [class]="getPaymentStatusColor(payment.status)">
+                    {{ payment.status }}
+                  </span>
+                </td>
+                <td>{{ payment.mpesaReceiptNumber || '—' }}</td>
+                <td>{{ payment.paymentDate | date:'MMM d, y' }}</td>
+              </tr>
+              <tr *ngIf="filteredPayments.length === 0">
+                <td colspan="6" class="empty-row">No payments found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ============================================================
+           CVs
+      ============================================================ -->
+      <ng-container *ngIf="activeSection === 'cvs' && !loading">
+        <div class="section-toolbar">
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" [(ngModel)]="cvSearchTerm" (input)="filterCVs()" placeholder="Search CVs...">
+          </div>
+        </div>
+
+        <div class="cvs-grid">
+          <div *ngFor="let cv of filteredCvs" class="cv-card">
+            <div class="cv-type-badge" [class]="'badge-' + cv.cvType.toLowerCase()">
+              {{ getCvTypeIcon(cv.cvType) }} {{ cv.cvType }}
+            </div>
+            <div class="cv-info">
+              <div class="cv-date">Created: {{ cv.createdAt | date:'MMM d, y' }}</div>
+              <div *ngIf="cv.filePath" class="cv-file">
+                <i class="fas fa-file"></i>
+                <a [href]="cv.filePath" target="_blank">View File</a>
+              </div>
+              <div *ngIf="cv.content" class="cv-preview">
+                <p>{{ cv.content | slice:0:100 }}...</p>
+              </div>
+            </div>
+            <div class="cv-actions">
+              <button class="btn-delete" (click)="deleteCV(cv.id)" title="Delete"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+          <div *ngIf="filteredCvs.length === 0" class="empty-row">
+            No CVs found
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </main>
+</div>
