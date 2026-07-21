@@ -10,7 +10,7 @@ export class JwtInterceptor implements HttpInterceptor {
     '/properties/featured',
     '/properties/search',
     '/auth/login',
-    '/auth/register',
+    '/auth/signup',
     '/testimonials',
     '/dashboard/stats'
   ];
