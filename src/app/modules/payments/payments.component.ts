@@ -21,7 +21,7 @@ export class MyPaymentsComponent implements OnInit {
   searchTerm = '';
   statusFilter = '';
   paymentStatuses = ['PENDING', 'PAID', 'FAILED', 'CANCELLED'];
-  paymentMethods = ['MPESA', 'PESALINK', 'CARD'];
+  paymentMethods = ['MPESA', 'PESALINK', 'CARD', 'AIRTEL'];
   hasPaid = false;
   stats = {
     total: 0,
@@ -34,33 +34,46 @@ export class MyPaymentsComponent implements OnInit {
   constructor(private paymentService: PaymentService) {}
 
   ngOnInit(): void {
+    console.log('[MyPayments] Component initialized');
     this.loadPayments();
     this.checkPaymentStatus();
   }
 
   loadPayments(): void {
+    console.log('[MyPayments] loadPayments() called');
     this.loading = true;
     this.error = '';
+
     this.paymentService.getMyPayments().subscribe({
       next: (payments) => {
+        console.log('[MyPayments] Payments loaded successfully. Count:', payments?.length);
+        console.log('[MyPayments] Payments data:', payments);
         this.payments = payments;
         this.filteredPayments = payments;
         this.calculateStats();
         this.loading = false;
       },
       error: (err) => {
-        this.error = 'Failed to load payments: ' + (err.error || 'Unknown error');
+        console.error('[MyPayments] loadPayments FAILED:', err);
+        console.error('[MyPayments] Status:', err.status);
+        console.error('[MyPayments] Error body:', err.error);
+        this.error = this.extractError(err);
         this.loading = false;
       }
     });
   }
 
   checkPaymentStatus(): void {
+    console.log('[MyPayments] checkPaymentStatus() called');
+
     this.paymentService.getPaymentStatus().subscribe({
       next: (paid) => {
+        console.log('[MyPayments] Payment status (hasPaid):', paid);
         this.hasPaid = paid;
       },
-      error: () => {
+      error: (err) => {
+        console.error('[MyPayments] checkPaymentStatus FAILED:', err);
+        console.error('[MyPayments] Status:', err.status);
         this.hasPaid = false;
       }
     });
@@ -74,9 +87,13 @@ export class MyPaymentsComponent implements OnInit {
     this.stats.totalAmount = this.payments
       .filter(p => p.status === 'PAID')
       .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    console.log('[MyPayments] Stats calculated:', this.stats);
   }
 
   filterPayments(): void {
+    console.log('[MyPayments] filterPayments() — searchTerm:', this.searchTerm, '| statusFilter:', this.statusFilter);
+
     this.filteredPayments = this.payments.filter(p => {
       const matchSearch = !this.searchTerm ||
         (p.paymentReference && p.paymentReference.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
@@ -86,6 +103,23 @@ export class MyPaymentsComponent implements OnInit {
       const matchStatus = !this.statusFilter || p.status === this.statusFilter;
       return matchSearch && matchStatus;
     });
+
+    console.log('[MyPayments] Filtered results count:', this.filteredPayments.length);
+  }
+
+  refreshPayments(): void {
+    console.log('[MyPayments] Manual refresh triggered');
+    this.loadPayments();
+    this.checkPaymentStatus();
+  }
+
+  private extractError(err: any): string {
+    if (err.error?.message) return err.error.message;
+    if (typeof err.error === 'string') return err.error;
+    if (err.status === 0) return 'Cannot connect to server. Please check your internet connection.';
+    if (err.status === 401) return 'Session expired. Please login again.';
+    if (err.status === 403) return 'You do not have permission to view payments.';
+    return 'Failed to load payments. Please try again.';
   }
 
   getStatusBadgeClass(status: string): string {
@@ -142,21 +176,10 @@ export class MyPaymentsComponent implements OnInit {
   }
 
   getReceiptText(payment: Payment): string {
-    if (payment.mpesaReceiptNumber) {
-      return 'Receipt: ' + payment.mpesaReceiptNumber;
-    }
-    if (payment.transactionId) {
-      return 'Txn: ' + payment.transactionId.substring(0, 12);
-    }
-    if (payment.paymentReference) {
-      return 'Ref: ' + payment.paymentReference;
-    }
+    if (payment.mpesaReceiptNumber) return 'Receipt: ' + payment.mpesaReceiptNumber;
+    if (payment.transactionId) return 'Txn: ' + payment.transactionId.substring(0, 12);
+    if (payment.paymentReference) return 'Ref: ' + payment.paymentReference;
     return '—';
-  }
-
-  refreshPayments(): void {
-    this.loadPayments();
-    this.checkPaymentStatus();
   }
 
   getStatusLabel(status: string): string {
@@ -173,7 +196,8 @@ export class MyPaymentsComponent implements OnInit {
     const labels: {[key: string]: string} = {
       'MPESA': 'M-PESA',
       'PESALINK': 'Pesalink',
-      'CARD': 'Card'
+      'CARD': 'Card',
+      'AIRTEL': 'Airtel Money'
     };
     return labels[method] || method;
   }
