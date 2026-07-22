@@ -17,6 +17,7 @@ export class SignupComponent {
   loading = false;
   error = '';
   success = '';
+  serverWaking = false;
 
   constructor(
     private fb: FormBuilder,
@@ -35,20 +36,64 @@ export class SignupComponent {
 
   onSubmit(): void {
     if (this.signupForm.invalid) return;
+
     this.loading = true;
+    this.serverWaking = false;
     this.error = '';
     this.success = '';
 
+    const wakingTimer = setTimeout(() => {
+      if (this.loading) {
+        this.serverWaking = true;
+      }
+    }, 5000);
+
     this.authService.signup(this.signupForm.value).subscribe({
-      next: (response) => {
+      next: () => {
+        clearTimeout(wakingTimer);
         this.loading = false;
-        this.success = 'Registration successful! Please login.';
+        this.serverWaking = false;
+        this.success = 'Account created successfully! Redirecting to login...';
         setTimeout(() => this.router.navigate(['/auth/login']), 2000);
       },
       error: (err) => {
+        clearTimeout(wakingTimer);
         this.loading = false;
-        this.error = err.error || 'Registration failed. Please try again.';
+        this.serverWaking = false;
+        this.error = this.extractError(err);
       }
     });
+  }
+
+  private extractError(err: any): string {
+    if (!err) return 'Something went wrong. Please try again.';
+
+    if (err.error?.message) return err.error.message;
+
+    if (err.error?.errors) {
+      return Object.values(err.error.errors).join('. ');
+    }
+
+    if (typeof err.error === 'string' && err.error.length > 0) {
+      return err.error;
+    }
+
+    if (err.status === 0) {
+      return 'Cannot connect to server. Please check your internet connection.';
+    }
+
+    if (err.status === 409) {
+      return 'An account with this email or phone number already exists. Please login instead.';
+    }
+
+    if (err.status === 400) {
+      return 'Please check your details and try again.';
+    }
+
+    if (err.status === 500) {
+      return 'Server error. Please try again in a moment.';
+    }
+
+    return 'Something went wrong. Please try again.';
   }
 }
