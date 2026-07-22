@@ -78,7 +78,6 @@
     </div>
   </div>
 
-  <!-- Create CV Modal -->
   <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -152,7 +151,6 @@
     </div>
   </div>
 
-  <!-- View CV Modal -->
   <div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
     <div class="modal-content view-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -179,7 +177,6 @@
     </div>
   </div>
 
-  <!-- Delete Confirmation Modal -->
   <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
     <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -200,7 +197,6 @@
     </div>
   </div>
 
-  <!-- Payment Modal - Same structure as Apply Component -->
   <div class="payment-modal-overlay" *ngIf="showPaymentModal" (click)="closePaymentModal()">
     <div class="payment-modal-shell" (click)="$event.stopPropagation()">
 
@@ -208,38 +204,38 @@
         <div class="sidebar-title">PAY WITH</div>
 
         <div class="payment-method-row" [class.active]="selectedPaymentMethod === 'mpesa'"
-          [class.disabled]="!isMethodEnabled('mpesa')" (click)="selectPaymentMethod('mpesa')">
+          [class.disabled]="!isMethodEnabled('mpesa') || paymentStage === 'waiting'" (click)="selectPaymentMethod('mpesa')">
           <span class="method-icon">📱</span>
           <span class="method-name mpesa-name">M-PESA</span>
         </div>
 
         <div class="payment-method-row" [class.active]="selectedPaymentMethod === 'pesalink'"
-          [class.disabled]="!isMethodEnabled('pesalink')" (click)="selectPaymentMethod('pesalink')">
+          [class.disabled]="!isMethodEnabled('pesalink') || paymentStage === 'waiting'" (click)="selectPaymentMethod('pesalink')">
           <span class="method-icon">🏦</span>
           <span class="method-name">Pesalink</span>
         </div>
 
         <div class="payment-method-row" [class.active]="selectedPaymentMethod === 'card'"
-          [class.disabled]="!isMethodEnabled('card')" (click)="selectPaymentMethod('card')">
+          [class.disabled]="!isMethodEnabled('card') || paymentStage === 'waiting'" (click)="selectPaymentMethod('card')">
           <span class="method-icon">💳</span>
           <span class="method-name">Card</span>
         </div>
 
         <div class="payment-method-row" [class.active]="selectedPaymentMethod === 'mpesa_till'"
-          [class.disabled]="!isMethodEnabled('mpesa_till')" (click)="selectPaymentMethod('mpesa_till')">
+          [class.disabled]="!isMethodEnabled('mpesa_till') || paymentStage === 'waiting'" (click)="selectPaymentMethod('mpesa_till')">
           <span class="method-icon">📲</span>
           <span class="method-name">M-PESA Till</span>
         </div>
 
         <div class="payment-method-row" [class.active]="selectedPaymentMethod === 'airtel'"
-          [class.disabled]="!isMethodEnabled('airtel')" (click)="selectPaymentMethod('airtel')">
+          [class.disabled]="!isMethodEnabled('airtel') || paymentStage === 'waiting'" (click)="selectPaymentMethod('airtel')">
           <span class="method-icon">📡</span>
           <span class="method-name">Airtel Money</span>
         </div>
       </div>
 
       <div class="payment-main">
-        <button class="payment-close-btn" (click)="closePaymentModal()">✕</button>
+        <button class="payment-close-btn" *ngIf="paymentStage !== 'waiting'" (click)="closePaymentModal()">✕</button>
 
         <div class="payment-header-row">
           <span class="payment-user-email">{{ getUserEmail() }}</span>
@@ -248,34 +244,98 @@
 
         <div class="payment-error" *ngIf="paymentError">{{ paymentError }}</div>
 
-        <div class="payment-panel" *ngIf="selectedPaymentMethod === 'mpesa'">
-          <div class="mpesa-logo">M-PESA</div>
-          <p class="payment-instruction">Please enter your mobile money number to begin this payment</p>
+        <ng-container *ngIf="paymentStage === 'form'">
 
-          <input type="tel" class="payment-phone-input" placeholder="070 000 0000" [(ngModel)]="mpesaPhone"
-            [ngModelOptions]="{standalone: true}">
+          <div class="payment-panel" *ngIf="selectedPaymentMethod === 'mpesa'">
+            <div class="mpesa-logo">M-PESA</div>
+            <p class="payment-instruction">Please enter your mobile money number to begin this payment</p>
 
-          <button class="pay-now-btn" [disabled]="paymentSubmitting" (click)="payWithMpesa()">
-            {{ paymentSubmitting ? 'Processing...' : 'Pay KES 500' }}
-          </button>
+            <input type="tel" class="payment-phone-input" placeholder="070 000 0000" [(ngModel)]="mpesaPhone"
+              [ngModelOptions]="{standalone: true}">
 
-          <div class="payment-alt-method">
-            Prefer a different method?
-            <a href="javascript:void(0)" (click)="selectPaymentMethod('pesalink')">Switch to Pesalink</a>
+            <button class="pay-now-btn" [disabled]="paymentSubmitting" (click)="payWithMpesa()">
+              {{ paymentSubmitting ? 'Processing...' : 'Pay KES 500' }}
+            </button>
+
+            <div class="payment-alt-method">
+              Prefer a different method?
+              <a href="javascript:void(0)" (click)="selectPaymentMethod('pesalink')">Switch to Pesalink</a>
+            </div>
           </div>
+
+          <div class="payment-panel" *ngIf="selectedPaymentMethod === 'pesalink'">
+            <div class="pesalink-logo">🏦 Pesalink</div>
+            <p class="payment-instruction">You'll get bank transfer details to complete this payment.</p>
+
+            <button class="pay-now-btn" [disabled]="paymentSubmitting" (click)="payWithPesalink()">
+              {{ paymentSubmitting ? 'Processing...' : 'Continue with Pesalink' }}
+            </button>
+
+            <div class="payment-alt-method">
+              Prefer a different method?
+              <a href="javascript:void(0)" (click)="selectPaymentMethod('mpesa')">Switch to M-PESA</a>
+            </div>
+          </div>
+
+          <div class="payment-panel coming-soon-panel" *ngIf="!isMethodEnabled(selectedPaymentMethod)">
+            <div class="coming-soon-icon">🚀</div>
+            <p class="payment-instruction">{{ getComingSoonMessage(selectedPaymentMethod) }}</p>
+            <p class="payment-subtext">Please use M-PESA or Pesalink for now.</p>
+            <div class="payment-alt-method">
+              <a href="javascript:void(0)" (click)="selectPaymentMethod('mpesa')">Go to M-PESA</a>
+              &nbsp;or&nbsp;
+              <a href="javascript:void(0)" (click)="selectPaymentMethod('pesalink')">Go to Pesalink</a>
+            </div>
+          </div>
+
+        </ng-container>
+
+        <div class="payment-panel" *ngIf="paymentStage === 'waiting'">
+          <div class="payment-spinner"></div>
+          <p class="payment-instruction">Waiting for you to complete payment on your phone...</p>
+          <p class="payment-subtext">Enter your M-PESA PIN when prompted. This can take up to a minute.</p>
         </div>
 
-        <div class="payment-panel" *ngIf="selectedPaymentMethod === 'pesalink'">
+        <div class="payment-panel" *ngIf="paymentStage === 'pesalink-instructions'">
           <div class="pesalink-logo">🏦 Pesalink</div>
-          <p class="payment-instruction">You'll be redirected to complete this payment securely via Pesalink.</p>
+          <p class="payment-instruction">Send KES 500 to the account below</p>
+          <div class="pesalink-details">
+            <div class="pesalink-detail-row" *ngIf="pesalinkBankName">
+              <span class="detail-label">Bank</span>
+              <span class="detail-value">{{ pesalinkBankName }}</span>
+            </div>
+            <div class="pesalink-detail-row" *ngIf="pesalinkAccountName">
+              <span class="detail-label">Account Name</span>
+              <span class="detail-value">{{ pesalinkAccountName }}</span>
+            </div>
+            <div class="pesalink-detail-row" *ngIf="pesalinkAccountNumber">
+              <span class="detail-label">Account Number</span>
+              <span class="detail-value">{{ pesalinkAccountNumber }}</span>
+            </div>
+            <div class="pesalink-detail-row" *ngIf="pesalinkTransactionReference">
+              <span class="detail-label">Reference</span>
+              <span class="detail-value">{{ pesalinkTransactionReference }}</span>
+            </div>
+          </div>
+          <div class="payment-spinner"></div>
+          <p class="payment-subtext">Waiting for your transfer to be confirmed...</p>
+        </div>
 
-          <button class="pay-now-btn" [disabled]="paymentSubmitting" (click)="payWithPesalink()">
-            {{ paymentSubmitting ? 'Processing...' : 'Continue with Pesalink' }}
-          </button>
+        <div class="payment-panel confirmed-panel" *ngIf="paymentStage === 'confirmed'">
+          <div class="confirmed-icon">✔</div>
+          <p class="payment-instruction">Payment Confirmed!</p>
+          <p class="payment-subtext" *ngIf="confirmedReceiptCode">
+            Transaction code: <strong>{{ confirmedReceiptCode }}</strong>
+          </p>
+          <button class="pay-now-btn" (click)="finishAfterConfirmation()">Continue</button>
+        </div>
 
+        <div class="payment-panel" *ngIf="paymentStage === 'timeout'">
+          <p class="payment-instruction">We haven't received confirmation yet.</p>
+          <p class="payment-subtext">If you completed the payment, tap below to check again.</p>
+          <button class="pay-now-btn" (click)="retryStatusCheck()">Check Again</button>
           <div class="payment-alt-method">
-            Prefer a different method?
-            <a href="javascript:void(0)" (click)="selectPaymentMethod('mpesa')">Switch to M-PESA</a>
+            <a href="javascript:void(0)" (click)="closePaymentModal()">Cancel and try later</a>
           </div>
         </div>
 
@@ -294,17 +354,6 @@
           <button class="pay-now-btn" (click)="retryPayment()">Try Again</button>
           <div class="payment-alt-method">
             <a href="javascript:void(0)" (click)="closePaymentModal()">Cancel and try later</a>
-          </div>
-        </div>
-
-        <div class="payment-panel coming-soon-panel" *ngIf="!isMethodEnabled(selectedPaymentMethod)">
-          <div class="coming-soon-icon">🚀</div>
-          <p class="payment-instruction">{{ getComingSoonMessage(selectedPaymentMethod) }}</p>
-          <p class="payment-subtext">Please use M-PESA or Pesalink for now.</p>
-          <div class="payment-alt-method">
-            <a href="javascript:void(0)" (click)="selectPaymentMethod('mpesa')">Go to M-PESA</a>
-            &nbsp;or&nbsp;
-            <a href="javascript:void(0)" (click)="selectPaymentMethod('pesalink')">Go to Pesalink</a>
           </div>
         </div>
 

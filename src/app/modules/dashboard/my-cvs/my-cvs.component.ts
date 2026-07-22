@@ -384,7 +384,6 @@ export class MyCVsComponent implements OnInit, OnDestroy {
     });
   }
 
-
   payWithPesalink(): void {
     this.paymentSubmitting = true;
     this.paymentError = '';
@@ -509,6 +508,7 @@ export class MyCVsComponent implements OnInit, OnDestroy {
     this.pollAttempts = 0;
     this.poll();
   }
+
   retryPayment(): void {
     this.activePaymentId = null;
     this.paymentStage = 'form';
